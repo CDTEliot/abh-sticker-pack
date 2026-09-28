@@ -1,0 +1,29 @@
+name: Prepare website files
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - abh-sticker-pack.zip
+      - .github/workflows/prepare-website.yml
+permissions:
+  contents: write
+jobs:
+  extract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Extract website into docs
+        run: |
+          unzip -q abh-sticker-pack.zip -d "$RUNNER_TEMP/sticker-source"
+          test -f "$RUNNER_TEMP/sticker-source/abh-sticker-pack/index.html"
+          mkdir -p docs
+          cp -R "$RUNNER_TEMP/sticker-source/abh-sticker-pack/." docs/
+          touch docs/.nojekyll
+          cp docs/README.md README.md
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add docs README.md
+          if ! git diff --cached --quiet; then
+            git commit -m "Extract website files for GitHub Pages"
+            git push
+          fi
