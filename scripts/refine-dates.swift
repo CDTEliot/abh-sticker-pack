@@ -1,0 +1,23 @@
+import AppKit
+import Foundation
+let root = "docs/assets"
+let specs = [[1276,1064,955,682,265,48,1208,718,40],[1956,305,1144,101,177,32,1152,127,27],[1200,640,887,447,273,48,1152,485,42],[1200,640,887,447,273,48,1152,485,42]]
+for (j,s) in specs.enumerated() {
+ let i=j+1, w=s[4],h=s[5],count=w*h
+ let data=try Data(contentsOf:URL(fileURLWithPath:"\(root)/sticker-\(i).png"))
+ let image=NSBitmapImageRep(data:data)!
+ var colors=[[Double]](repeating:[0,0,0],count:count), ink=[Bool](repeating:false,count:count), mask=[Bool](repeating:false,count:count)
+ for y in 0..<h {for x in 0..<w {let n=y*w+x;let c=image.colorAt(x:s[2]+x,y:s[3]+y)!;colors[n]=[c.redComponent,c.greenComponent,c.blueComponent];ink[n]=colors[n].min()! > 0.86}}
+ for y in 2..<(h-2) {for x in 2..<(w-2) {if ink[y*w+x] {for yy in -2...2 {for xx in -2...2 {mask[(y+yy)*w+x+xx]=true}}}}}
+ let active=(0..<count).filter{mask[$0] && $0/w>0 && $0/w<h-1 && $0%w>0 && $0%w<w-1}
+ for n in active {colors[n]=[0.5,0.5,0.5]}
+ for _ in 0..<550 {for n in active {for c in 0..<3 {colors[n][c]=(colors[n-1][c]+colors[n+1][c]+colors[n-w][c]+colors[n+w][c])*0.25}}}
+ var patches=""
+ for n in active {let rgb=colors[n].map{Int(($0*255).rounded())};patches += "<path fill=\"rgb(\(rgb[0]),\(rgb[1]),\(rgb[2]))\" d=\"M\(s[2]+n%w) \(s[3]+n/w)h1v1h-1z\"/>"}
+ let anchor=i==2 ? "start":"end"
+ let svg="""
+ <svg xmlns="http://www.w3.org/2000/svg" width="\(s[0])" height="\(s[1])" viewBox="0 0 \(s[0]) \(s[1])"><image width="\(s[0])" height="\(s[1])" href="data:image/png;base64,\(data.base64EncodedString())"/><g shape-rendering="crispEdges">\(patches)</g><text x="\(s[6])" y="\(s[7])" fill="white" font-family="Menlo, 'Courier New', monospace" font-size="\(s[8])" text-anchor="\(anchor)">NOV 26</text></svg>
+ """
+ try svg.write(toFile:"\(root)/sticker-\(i)-nov26.svg",atomically:true,encoding:.utf8)
+ print("Sticker \(i): refined \(active.count) original ink pixels")
+}

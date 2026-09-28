@@ -7,7 +7,7 @@ let selected=0,exploded=false,paused=matchMedia('(prefers-reduced-motion: reduce
 const renderer=new THREE.WebGLRenderer({antialias:true,alpha:true});renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.setClearColor(0xffffff,0);stage.append(renderer.domElement);
 const scene=new THREE.Scene(),camera=new THREE.PerspectiveCamera(34,1,.1,100);camera.position.z=10;
 const group=new THREE.Group();scene.add(group);
-const textures=await Promise.all(designs.map((_,i)=>new THREE.TextureLoader().loadAsync(`assets/sticker-${i+1}.png`)));textures.forEach(t=>t.anisotropy=renderer.capabilities.getMaxAnisotropy());$('#fallback').hidden=true;
+const textures=await Promise.all(designs.map((_,i)=>new THREE.TextureLoader().loadAsync(`assets/sticker-${i+1}-nov26.svg?v=seamless5`)));textures.forEach(t=>t.anisotropy=renderer.capabilities.getMaxAnisotropy());$('#fallback').hidden=true;
 const size=new THREE.Vector2(),sheet=new ElasticSheet(64,44),geometry=new THREE.PlaneGeometry(1,1,64,44);geometry.attributes.position.setUsage(THREE.DynamicDrawUsage);geometry.attributes.normal.setUsage(THREE.DynamicDrawUsage);
 const materials=[],meshes=[];
 for(let i=0;i<5;i++){const mat=new THREE.ShaderMaterial({uniforms:{art:{value:textures[0]},size:{value:size},lift:{value:0},spread:{value:0},mode:{value:i},opacity:{value:1}},vertexShader:vertex,fragmentShader:fragment,side:THREE.DoubleSide,transparent:true,depthWrite:i!==1});const mesh=new THREE.Mesh(geometry,mat);mesh.renderOrder=i===1?6:5-i;group.add(mesh);materials.push(mat);meshes.push(mesh);}
